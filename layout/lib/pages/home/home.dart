@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -25,23 +27,23 @@ class _HomePageState extends State<HomePage> {
         body: Padding(
             padding: const EdgeInsets.all(20),
             child: FutureBuilder(
-              builder: (context, snapshot) {
-                var data = json.decode(snapshot.data.toString());
+              builder: (context, AsyncSnapshot snapshot) {
+                // var data = json.decode(snapshot.data.toString());
                 return ListView.builder(
                   itemBuilder: (BuildContext context, int index) {
-                    return MyBox(
-                      data[index]['title'], 
-                      data[index]['subtitle'],
-                      data[index]['img_url'],
-                      data[index]['detail']
-                    );
+                    return MyBox(snapshot.data[index]['title'], snapshot.data[index]['subtitle'],
+                        snapshot.data[index]['img_url'], snapshot.data[index]['detail']);
                   },
-                  itemCount: data.length,
+                  itemCount: snapshot.data.length,
                 );
               },
-              future:
-                  DefaultAssetBundle.of(context).loadString('assets/data.json'),
-            )));
+
+              future: getData(),
+
+              //future: DefaultAssetBundle.of(context).loadString('assets/data.json'),
+            )
+            )
+            );
   }
 
   @override
@@ -92,8 +94,10 @@ class _HomePageState extends State<HomePage> {
           TextButton(
               onPressed: () {
                 // print("next page >>>");
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => DetailPage(v1,v2,v3,v4)));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DetailPage(v1, v2, v3, v4)));
               },
               child: Text("Read Me"))
         ],
@@ -104,12 +108,12 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget CarouselSliderBanner() {
     return Container(
-      child: CarouselSlider.builder(
-        itemCount: urlImageCarousel.length,
-        itemBuilder: (context, index, realIndex) {
-          final urlBannerCarousel = urlImageCarousel[index];
+        child: CarouselSlider.builder(
+      itemCount: urlImageCarousel.length,
+      itemBuilder: (context, index, realIndex) {
+        final urlBannerCarousel = urlImageCarousel[index];
 
-            return buildImageBanner(urlBannerCarousel, index);
+        return buildImageBanner(urlBannerCarousel, index);
       },
       options: CarouselOptions(
         height: 150,
@@ -138,5 +142,13 @@ class _HomePageState extends State<HomePage> {
         fit: BoxFit.cover,
       )),
     );
+  }
+
+  Future getData() async {
+    var url = Uri.http('raw.githubusercontent.com',
+        '/NattawutSmansin/BootCampBasicAPI/main/data.json');
+    var response = await http.get(url);
+    var result = json.decode(response.body);
+    return result;
   }
 }
